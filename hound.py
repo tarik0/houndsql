@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from time import sleep
-from os import _exit
+from os import _exit, path, makedirs
+from errno import EEXIST
 from datetime import datetime
 from threading import Thread
 from colorama import init
@@ -92,7 +93,15 @@ def search_google(dork):
 
     current_dt = datetime.now()
     output_file_name = current_dt.strftime("%Y_%m_%d-%H_%M_%S")
-    with open("./google_search_results/response_" + output_file_name + ".html", "w+" ,  encoding='utf8') as f:
+    
+    if not path.exists(path.dirname("./hound_google_search_results/response_" + output_file_name + ".html")):
+        try:
+            makedirs(path.dirname("./hound_google_search_results/response_" + output_file_name + ".html"))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != EEXIST:
+                raise
+
+    with open("./hound_google_search_results/response_" + output_file_name + ".html", "w+" ,  encoding='utf8') as f:
         f.write(response.text)
         f.close()
     
@@ -171,7 +180,14 @@ def main():
     output_file_name = "vuln_" + current_dt.strftime("%Y_%m_%d-%H_%M_%S")
     print_success("Found sites are saved into", output_file_name + ".txt !", end="\n\n")
 
-    with open("./scan_results/" + output_file_name + ".txt", "w+", encoding='utf8') as f:
+    if not path.exists(path.dirname("./hound_scan_results/" + output_file_name + ".txt")):
+        try:
+            makedirs(path.dirname("./hound_scan_results/" + output_file_name + ".txt"))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != EEXIST:
+                raise
+
+    with open("./hound_scan_results/" + output_file_name + ".txt", "w+", encoding='utf8') as f:
         for site in vuln_sites:
             f.write(site + "\n")
         f.close()
